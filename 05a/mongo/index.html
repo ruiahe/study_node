@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- element-ui -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- axios -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <title>瓜果超市</title>
+</head>
+<body>
+  <!-- import Vue before Element -->
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <div id="app">
+    <el-input placeholder='请输入内容' v-model='search' class="">
+      <el-button slot='append' icon="el-icon-search" @click="getData"></el-button>
+    </el-input>
+    <el-radio-group v-model="category" @change="getData">
+      <el-radio-button v-for="v in categorys" :label="v" :key="v">{{v}}</el-radio-button>
+    </el-radio-group>
+    <el-table :data="fruits" style="width:100%">
+      <el-table-column prop="name" label="名称" width="180"></el-table-column>
+      <el-table-column prop="price" label="价格" width="180"></el-table-column>
+      <el-table-column prop="category" label="种类"></el-table-column>
+    </el-table>
+    <el-pagination layout="prev, pager, next" @current-change="currentChange" :total="total" :page-size="page "></el-pagination>
+  </div>
+  <script> 
+    var app = new Vue({
+      el: '#app',
+      data: {
+        page: 1,
+        total: 0,
+        fruits: [],
+        categorys: [],
+        category: '',
+        search: ''
+      },
+      created() {
+        this.getData()
+        this.getCategory()
+      },
+      methods: {
+        async currentChange(page) {
+          this.page = page;
+          await this.getData()
+        },
+        async changeHandler(val) {
+          this.search = val;
+          await this.getData()
+        },
+        async getData(val) {
+          const res = await axios.get(`/api/list?page=${this.page}&category=${this.category}&keyword=${this.search}`)
+          const data = (res.data || {}).data || {}
+          console.log(data)
+          this.fruits = data.fruits
+          this.total = data.pagination.total
+          console.log('category', this.categorys)
+        },
+        async getCategory() {
+          const res = await axios.get(`/api/category`)
+          this.categorys = res.data.data
+        }
+      }
+    })
+  </script>
+</body>
+</html>
